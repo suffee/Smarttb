@@ -1,19 +1,26 @@
 #include <Servo.h>
 #include <Ultrasonic.h>
 #include <SoftwareSerial.h>
-SoftwareSerial HC06(10, 11); // TX, RX
-#define TRIGGER_PIN  4
-#define ECHO_PIN     2
-Servo myservo;
 #include <SPI.h>
 #include <MFRC522.h>
-#define SS_PIN 53
-#define RST_PIN A1
+
+#define TRIGGER_PIN  4
+#define ECHO_PIN     2
+
+#define SS_PIN 		53
+#define RST_PIN 	A1
+#define COVER_PIN   A0
+
+Servo myservo;
+SoftwareSerial HC06(10, 11); // TX, RX
 MFRC522 rfid(SS_PIN, RST_PIN);
+
 int pos = 90;
 int enableA = 3;
 int pinA1 = 9;
 int pinA2 = 8;
+
+
 // motor two
 int enableB = 5;
 int pinB1 = 7;
@@ -33,11 +40,12 @@ Ultrasonic ultrasonic(TRIGGER_PIN, ECHO_PIN);
 
 void setup()
 {
-  myservo.attach(A0);
+  myservo.attach(COVER_PIN);
   Serial.begin(9600);
   SPI.begin(); 
   rfid.PCD_Init();
   HC06.begin(9600);
+  
   pinMode(enableA, OUTPUT);
   pinMode(pinA1, OUTPUT);
   pinMode(pinA2, OUTPUT);
