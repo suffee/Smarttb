@@ -1,34 +1,51 @@
 #include <Servo.h>
 #include <Ultrasonic.h>
 #include <SoftwareSerial.h>
+
 SoftwareSerial HC06(10, 11); // TX, RX
+
 #define TRIGGER_PIN  4
 #define ECHO_PIN     2
+
 Servo myservo;
+
 #include <SPI.h>
 #include <MFRC522.h>
 #define SS_PIN 53
 #define RST_PIN A1
+
 MFRC522 rfid(SS_PIN, RST_PIN);
-int pos = 90;
-int enableA = 3;
-int pinA1 = 9;
-int pinA2 = 8;
+
+
+int pos = 90;							//蓋子角度
+int enableA = 3;						//左邊致能
+int pinA1 = 9;							//左邊前輪
+int pinA2 = 8;							//左邊後輪
+
 // motor two
-int enableB = 5;
-int pinB1 = 7;
-int pinB2 = 6;
-int a = 0;
-int a2 = 0;
-int a3 = 0;
-int a4 = 0;
-int a5 = 0;
-char b;
-char c = 'Y';
-int i1 = A2;     //sensor1
-int i2 = A3;
-int i3 = A4;    //sensor2
-int s1,s2,s3;
+int enableB = 5;						//右邊致能
+int pinB1 = 7;							//右邊前輪
+int pinB2 = 6;							//右邊後輪
+
+int a = 0;								//User1_Times
+int a2 = 0;								//User2_Times
+int a3 = 0;								//User3_Times
+int a4 = 0;								//User4_Times
+int a5 = 0;								//User5_Times
+
+char b;									//動作指令暫存
+char c = 'Y';							//程式流程控制
+
+int i1 = A2;     						//巡機感應模組左
+int i2 = A3;							//巡機感應模組中
+int i3 = A4;    						//巡機感應模組右
+
+int s1;									//巡機感應模組左數值
+int s2;									//巡機感應模組中數值
+int s3;									//巡機感應模組右數值
+
+
+
 Ultrasonic ultrasonic(TRIGGER_PIN, ECHO_PIN);
 
 void setup()
@@ -53,77 +70,96 @@ void setup()
 void loop()
 {
   if(HC06.available()){
-    char d= (char)HC06.read();
+    
+	char d= (char)HC06.read();
     Serial.println(d);
-    switch(d){
-      case 'W':
-          b = ' ';
-          digitalWrite(pinA1, LOW);
-          digitalWrite(pinA2, LOW);
-          digitalWrite(pinB1, LOW);
-          digitalWrite(pinB2, LOW);
-          c = 'W';
-          break;
-      case 'X':
-          s1==LOW;
-          s2==LOW;
-          s3==LOW;
-          b = ' ';
-          digitalWrite(pinA1, LOW);
-          digitalWrite(pinA2, LOW);
-          digitalWrite(pinB1, LOW);
-          digitalWrite(pinB2, LOW);
-          c = 'X';
-          break;
-      case 'Y':
-          s1==LOW;
-          s2==LOW;
-          s3==LOW;
-          digitalWrite(pinA1, LOW);
-          digitalWrite(pinA2, LOW);
-          digitalWrite(pinB1, LOW);
-          digitalWrite(pinB2, LOW);
-        c = 'Y';
-        break;
-      case 'Z':        
-        b = ' ';
-        s1==LOW;
-        s2==LOW;
-        s3==LOW;
-          digitalWrite(pinA1, LOW);
-          digitalWrite(pinA2, LOW);
-          digitalWrite(pinB1, LOW);
-          digitalWrite(pinB2, LOW);
-        c = 'Z';
-        break;
-                }               
-if(c == 'Y')
-  {
-        switch(d){
-          case 'U':
+    
+	switch(d){
+    
+	case 'W':
+
+			b = ' ';
+			digitalWrite(pinA1, LOW);
+			digitalWrite(pinA2, LOW);
+			digitalWrite(pinB1, LOW);
+			digitalWrite(pinB2, LOW);
+			c = 'W';
+			break;
+    
+	case 'X':
+			s1==LOW;
+			s2==LOW;
+			s3==LOW;
+			b = ' ';
+			digitalWrite(pinA1, LOW);
+			digitalWrite(pinA2, LOW);
+			digitalWrite(pinB1, LOW);
+			digitalWrite(pinB2, LOW);
+			c = 'X';
+			break;
+    
+	case 'Y':
+    
+			s1==LOW;
+			s2==LOW;
+			s3==LOW;
+			digitalWrite(pinA1, LOW);
+			digitalWrite(pinA2, LOW);
+			digitalWrite(pinB1, LOW);
+			digitalWrite(pinB2, LOW);
+			c = 'Y';
+			break;
+    
+	case 'Z':        
+			b = ' ';
+			s1==LOW;
+			s2==LOW;
+			s3==LOW;
+			digitalWrite(pinA1, LOW);
+			digitalWrite(pinA2, LOW);
+			digitalWrite(pinB1, LOW);
+			digitalWrite(pinB2, LOW);
+			c = 'Z';
+			
+			break;
+    }              
+	
+	if(c == 'Y'){
+        
+		switch(d){
+			
+			case 'U':
             b = 'U';
             break;
-          case 'D':
+          
+			case 'D':
             b = 'D';
             break;
-          case 'R':
+          
+			case 'R':
             b = 'R';
             break;
-        case 'L':
+        
+			case 'L':
             b = 'L';
             break;
-        case 'B':
+			
+			case 'B':
             b = 'B' ;     
             break;
-        case 'O':
+			
+			case 'O':
             b = 'O' ;     
             break;
-        case 'C':
+			
+			case 'C':
             b = 'C' ;     
             break;    
-                 }
-  }
+        }
+	}
   } 
+  
+  
   if(c == 'W')
   {
        float cmMsec, inMsec;
@@ -204,9 +240,12 @@ if(c == 'Y')
         return;
       if ( ! rfid.PICC_ReadCardSerial()) // Verify if the NUID has been readed
         return;
+		
+		
       Serial.println("The NUID tag is:");
       printHex(rfid.uid.uidByte, rfid.uid.size);
       rfid.PICC_HaltA();  // Halt PICC
+	  
       {
       if(rfid.uid.uidByte[0] == 0xA3 && 
        rfid.uid.uidByte[1] == 0x84 &&
