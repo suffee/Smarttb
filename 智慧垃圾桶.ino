@@ -57,56 +57,66 @@ void setup()
 
 void loop(){
 	
+	char control=' ';
+	char user_Instruct=' ';
+	
 	if(HC06.available()){
 		
-		char d= (char)HC06.read();
-		Serial.println(d);
-    
-		switch(d){
+		char data_From_Bluethooth = (char)HC06.read();
 		
-			case 'W':
-				b = ' ';
-				stopAllMotor();
-				c = 'W';
-			break;
-			
-			case 'X':
-				s1==LOW;
-				s2==LOW;
-				s3==LOW;
-				b = ' ';
-				stopAllMotor();
-				c = 'X';
-			break;
-			
-			case 'Y':
-				s1==LOW;
-				s2==LOW;
-				s3==LOW;
-				stopAllMotor();
-				c = 'Y';
-			break;
-			
-			case 'Z':        
-				b = ' ';
-				s1==LOW;
-				s2==LOW;
-				s3==LOW;
-				 
-				c = 'Z';
-			break;
-        }  
+		Serial.println("=> "+data_From_Bluethooth+" Recived From Bluethooth\n");
+    
+		if(data_From_Bluethooth != 'Y')
+			user_Instruct= ' ';
+		
+		stopAllMotor();
+		control = data_From_Bluethooth;
 
+		if(control == 'Y')
+			user_Instruct = data_From_Bluethooth;
+	} 	
 	
-	if(c == 'Y')
-		b = d;
-} 	
+	if(control=='W')
+		IR_Walk_Mode();
+}
+void IR_Walk_Mode(){
 	
+	float cmMsec, inMsec;
+    long microsec = ultrasonic.timing();
+	int s1,s2,s3;
+    
+	cmMsec = ultrasonic.convert(microsec, Ultrasonic::CM);
+    inMsec = ultrasonic.convert(microsec, Ultrasonic::IN);
+    
+    Serial.println("MS: "+microsec+", CM: "+cmMsec+", IN: "+inMsec);
+    
+	delayMicroseconds(10);
+        
+	if(cmMsec > 25){
 	
-	
+		s1=digitalRead(RIGHT_IR_SENSOR);
+        s2=digitalRead(MIDDLE_IR_SENSOR);
+        s3=digitalRead(LEFT_IR_SENSOR);
+		
+		if(s1==HIGH && s2==HIGH && s3==HIGH)
+			forward(20);
+		else if(s1==LOW && s2==LOW && s3==LOW)
+			stopAllMotor();
+        else if(s1==LOW && s2==HIGH && s3==HIGH)
+			turnRight(20);
+        else if(s1==LOW && s2==LOW && s3==HIGH)
+			turnRight(20);
+        else if(s1==HIGH && s2==HIGH && s3==LOW)
+			turnLeft(20);
+        else if(s1==HIGH && s2==LOW && s3==LOW)
+			turnLeft(20);
+        else if(s1==LOW && s2==HIGH && s3==LOW)
+			forward(20);
+    }
+    else
+		stopAllMotor(); 
 	
 }
-
 void enableMotors()
 {
 	digitalWrite(LEFT_MOTOR_ENABLE,HIGH);
@@ -163,6 +173,15 @@ void motorBBrake()
 	digitalWrite(RIGHT_FRONT_MOTOR_PIN	,HIGH);
 }
 
+void stopAllMotor()
+{
+	
+	digitalWrite(LEFT_FRONT_MOTOR_PIN	,LOW);
+	digitalWrite(LEFT_BACK_MOTOR_PIN	,LOW);
+	digitalWrite(RIGHT_FRONT_MOTOR_PIN	,LOW);
+	digitalWrite(RIGHT_BACK_MOTOR_PIN	,LOW);
+
+}
 
 void printHex(byte *buffer, byte bufferSize) {
   
@@ -177,13 +196,6 @@ void printHex(byte *buffer, byte bufferSize) {
 	HC06.println("RFID " + temp);
 	Serial.println();
 }
-void stopAllMotor(){
-	
-	digitalWrite(LEFT_FRONT_MOTOR_PIN	,LOW);
-	digitalWrite(LEFT_BACK_MOTOR_PIN	,LOW);
-	digitalWrite(RIGHT_FRONT_MOTOR_PIN	,LOW);
-	digitalWrite(RIGHT_BACK_MOTOR_PIN	,LOW);
 
-}
 
 
